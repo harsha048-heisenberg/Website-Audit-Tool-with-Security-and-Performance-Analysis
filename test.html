@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
-            background-image: url('imn.jpeg');
+            background-image: url('https://plus.unsplash.com/premium_photo-1661964187664-e26f70e1a224?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y29kaW5nJTIwYmFja2dyb3VuZHxlbnwwfHwwfHx8MA%3D%3D');
             background-size: cover;
             background-position: center center;
             background-repeat: no-repeat;
@@ -332,6 +332,18 @@
         </div>
     </div>
 
+    <div id="suggestionPanel" class="fixed bottom-6 right-6 z-50 bg-white bg-opacity-90 rounded-xl shadow-xl p-6 max-w-sm w-full border border-blue-200 hidden">
+        <h4 class="text-lg font-bold mb-2 text-blue-700">Get Improvement Suggestions</h4>
+        <p class="text-gray-700 mb-3">Want expert feedback on your website? Request a review and get actionable suggestions to improve your site's security, performance, and SEO.</p>
+        <form id="suggestionForm" class="space-y-2">
+            <input type="email" id="userEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Your email for suggestions" required>
+            <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors">Request Suggestions</button>
+        </form>
+        <div id="suggestionMsg" class="mt-2 text-green-600 font-medium hidden"></div>
+        <button id="closeSuggestionPanel" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    <button id="openSuggestionPanel" class="fixed bottom-6 right-6 z-40 bg-blue-600 text-white px-5 py-3 rounded-full shadow-lg font-bold hover:bg-blue-700 transition-colors">Get Suggestions</button>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const { jsPDF } = window.jspdf;
@@ -373,6 +385,11 @@
             const savedWebsitesList = document.getElementById('savedWebsitesList');
             const addWebsiteBtn = document.getElementById('addWebsiteBtn');
             const exportPdfBtn = document.getElementById('exportPdf');
+            const suggestionPanel = document.getElementById('suggestionPanel');
+            const openSuggestionPanel = document.getElementById('openSuggestionPanel');
+            const closeSuggestionPanel = document.getElementById('closeSuggestionPanel');
+            const suggestionForm = document.getElementById('suggestionForm');
+            const suggestionMsg = document.getElementById('suggestionMsg');
             
             // UI State Management
             let auditInProgress = false;
@@ -843,6 +860,29 @@
                 const max = Math.min(100, base + variation);
                 return Math.random() * (max - min) + min;
             }
+
+            // Suggestion Panel Feature
+            openSuggestionPanel.addEventListener('click', () => {
+                suggestionPanel.classList.remove('hidden');
+                openSuggestionPanel.classList.add('hidden');
+            });
+
+            closeSuggestionPanel.addEventListener('click', () => {
+                suggestionPanel.classList.add('hidden');
+                openSuggestionPanel.classList.remove('hidden');
+                suggestionMsg.classList.add('hidden');
+            });
+
+            suggestionForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                suggestionMsg.textContent = "Thank you! Our team will review your site and send improvement suggestions to your email.";
+                suggestionMsg.classList.remove('hidden');
+                suggestionForm.reset();
+                setTimeout(() => {
+                    suggestionPanel.classList.add('hidden');
+                    openSuggestionPanel.classList.remove('hidden');
+                }, 3000);
+            });
 
             // Start everything
             init();
