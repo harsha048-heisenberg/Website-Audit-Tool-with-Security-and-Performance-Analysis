@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Website Auditor - Complete</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .loading-pulse { animation: pulse 1.5s ease-in-out infinite; }
+        .progress-bar { transition: width 0.6s ease; }
+        .security-critical { box-shadow: 0 0 0 2px rgba(239,68,68,0.5); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Enterprise Header -->
+        <header class="mb-8 border-b pb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+            <div class="flex items-center mb-4 sm:mb-0">
+                <img src="https://placehold.co/40x40" alt="Enterprise shield logo with checkmark badge" class="w-10 h-10 mr-3">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold">Enterprise Website Auditor</h1>
+                    <p class="text-sm text-gray-500">Comprehensive security, performance and compliance analysis</p>
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <button id="historyBtn" class="px-3 py+1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-md flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    History
+                </button>
+                <button id="settingsBtn" class="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-md flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr+1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Settings
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Audit Interface -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Sidebar -->
+            <div class="lg:col-span-1 space-y-4">
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <h3 class="font-medium mb-3">Quick Audit</h3>
+                    <form id="auditForm" class="space-y-3">
+                        <div>
+                            <label for="websiteUrl" class="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
+                            <input type="url" id="websiteUrl" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="https://example.com">
+                        </div>
+                        <div>
+                            <label for="auditType" class="block text-sm font-medium text-gray+700 mb-1">Audit Type</label>
+                            <select id="auditType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="full">Full Audit</option>
+                                <option value="security">Security Only</option>
+                                <option value="performance">Performance Only</option>
+                                <option value="seo">SEO Only</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="deviceType" class="block text-sm font-medium text-gray-700 mb-1">Device</label>
+                            <select id="deviceType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="desktop">Desktop</option>
+                                <option value="mobile">Mobile</option>
+                            </select>
+                        </div>
+                        <button type="submit" id="startAuditBtn" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Start Audit
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Saved Websites -->
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-medium">Saved Websites</h3>
+                        <button class="text-blue-600 hover:text-blue-800 text-sm">+ Add</button>
+                    </div>
+                    <div class="space-y-2 max-h-60 overflow-y-auto">
+                        <div class="flex items-center justify-between p-2 hover:bg-gray-50 rounded cursor-pointer">
+                            <div class="flex items-center">
+                                <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                                <span class="text-sm truncate">example.com</span>
+                            </div>
+                            <span class="text-xs text-gray-500">2 days ago</span>
+                        </div>
+                        <!-- More saved sites would go here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="lg:col-span-3 space-y-6">
+                <!-- Audit Progress -->
+                <div id="progressSection" class="hidden bg-white rounded-xl shadow-sm p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-medium">Audit in Progress</h3>
+                            <p class="text-sm text-gray-500" id="auditStatusText">Initializing scanner</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span id="progressPercent" class="font-medium">0%</span>
+                            <button id="cancelAuditBtn" class="text-sm text-red-600 hover:text-red-800 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="progressBar" class="progress-bar bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 mt-4 text-sm">
+                        <div>
+                            <p class="text-gray-500">Security Scan</p>
+                            <p id="securityStatus" class="font-medium">Pending</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Performance</p>
+                            <p id="performanceStatus" class="font-medium">Pending</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">SEO Analysis</p>
+                            <p id="seoStatus" class="font-medium">Pending</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Dashboard -->
+                <div id="resultsDashboard" class="hidden">
+                    <!-- Summary Scorecards -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <!-- Overall Score -->
+                        <div class="bg-white rounded-xl shadow-sm p-5 flex flex-col items-center justify-center border-t-4 border-blue-500">
+                            <p class="text-sm text-gray-500 mb-1">Overall Score</p>
+                            <div class="relative w-20 h-20 mb-2">
+                                <canvas id="overallGauge"></canvas>
+                                <div id="overallScore" class="absolute inset-0 flex items-center justify-center text-2xl font-bold">-</div>
+                            </div>
+                            <p id="overallGrade" class="text-sm font-medium">Not Scored</p>
+                        </div>
+
+                        <!-- Security Score -->
+                        <div class="bg-white rounded-xl shadow-sm p-5 border-t-4 border-red-500">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <p class="text-sm text-gray-500">Security</p>
+                                    <p id="securityScore" class="text-2xl font-bold">-</p>
+                                </div>
+                                <div id="securityTrend" class="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-800 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1v-5a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 10.586 4.707 7.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0L12 9.414l4.293 4.293a1 1 0 001.414-1.414L13.414 8H16a1 1 0 100-2h-5a1 1 0 00-1 1v5a1 1 0 102 0V8.414l3.293 3.293a1 1 0 001.414-1.414l-5-5a1 1 0 00-1.414 0l-5 5a1 1 0 001.414 1.414L12 8.414V13z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span>3 new risks</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span>0 vulnerabilities</span>
+                                <span>5 passed</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
+                                <div class="bg-red-500 h-1 rounded-full" style="width: 80%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Score -->
+                        <div class="bg-white rounded-xl shadow-sm p-5 border-t-4 border-yellow-500">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <p class="text-sm text-gray-500">Performance</p>
+                                    <p id="performanceScore" class="text-2xl font-bold">-</p>
+                                </div>
+                                <div id="performanceTrend" class="text-xs px-1.5 py-0.5 rounded bg-yellow-100 text+yellow-800 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill+rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span>12% faster</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span>3.2s load</span>
+                                <span>First Contentful Paint</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
+                                <div class="bg-yellow-500 h-1 rounded-full" style="width: 65%"></div>
+                            </div>
+                        </div>
+
+                        <!-- SEO Score -->
+                        <div class="bg-white rounded-xl shadow-sm p-5 border-t-4 border-green-500">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <p class="text-sm text-gray-500">SEO</p>
+                                    <p id="seoScore" class="text-2xl font-bold">-</p>
+                                </div>
+                                <div id="seoTrend" class="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green+800 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                    </svg>
+                                    23% better
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span>5 issues</span>
+                                <span>8 passed</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
+                                <div class="bg-green-500 h-1 rounded-full" style="width: 92%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="bg-white rounded-xl shadow-sm p-5 mt-5">
+                        <ul class="flex border-b border-gray-200" id="chartTabs">
+                            <li class="mr-1">
+                                <a class="bg-white inline-block py-2 px-4 text-blue-600 font-medium border-b-2 border-blue-500 rounded-t-lg" href="#performanceChartTab">Performance</a>
+                            </li>
+                            <li class="mr-1">
+                                <a class="inline-block py-2 px-4 text-gray-500 hover:text-gray-600 font-medium" href="#securityChartTab">Security</a>
+                            </li>
+                            <li class="mr-1">
+                                <a class="inline-block py-2 px-4 text-gray-500 hover:text-gray-600 font-medium" href="#seoChartTab">SEO</a>
+                            </li>
+                        </ul>
+                        <div class="py-4">
+                            <div id="performanceChartTab" class="chart-content">
+                                <div class="h-64">
+                                    <canvas id="performanceChart"></canvas>
+                                </div>
+                            </div>
+                            <div id="securityChartTab" class="chart-content hidden">
+                                <div class="h-64">
+                                    <canvas id="securityChart"></canvas>
+                                </div>
+                            </div>
+                            <div id="seoChartTab" class="chart-content hidden">
+                                <div class="h-64">
+                                    <canvas id="seoChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Findings -->
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden mt-5">
+                        <div class="border-b border-gray-200">
+                            <nav class="flex -mb-px">
+                                <button class="findings-tab active" data-tab="securityFindings">
+                                    Security (0)
+                                </button>
+                                <button class="findings-tab" data-tab="performanceFindings">
+                                    Performance (0)
+                                </button>
+                                <button class="findings-tab" data-tab="seoFindings">
+                                    SEO (0)
+                                </button>
+                                <button class="findings-tab" data-tab="waterfall">
+                                    Waterfall
+                                </button>
+                                <div class="ml-auto flex items-center px-4">
+                                    <button id="exportPdf" class="text-sm text-blue-600 hover:text-blue-800 flex items-center px-2 py-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                        Export PDF
+                                    </button>
+                                </div>
+                            </nav>
+                        </div>
+                        <div class="p-4">
+                            <div id="securityFindings" class="findings-content">
+                                <div class="flex items-center justify-center py-12 text-gray-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                    No security findings to display. Run an audit first.
+                                </div>
+                            </div>
+                            <div id="performanceFindings" class="findings-content hidden"></div>
+                            <div id="seoFindings" class="findings-content hidden"></div>
+                            <div id="waterfall" class="findings-content hidden"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Panel -->
+                <div id="historyPanel" class="hidden bg-white rounded-xl shadow-sm p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-medium">Audit History</h3>
+                        <button class="text-sm text-gray-500 hover:text-gray-700">Clear All</button>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-green+500 mr-3"></div>
+                                <div>
+                                    <p class="text-sm font-medium">example.com</p>
+                                    <p class="text-xs text-gray-500">Full Audit • May 15, 2023</p>
+                                </div>
+                            </div>
+                            <button class="text-sm text-blue-600 hover:text-blue-800">View</button>
+                        </div>
+                        <!-- More history items would appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium">Application Settings</h3>
+                <button id="closeSettingsBtn" class="text-gray-400 hover:text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">API Key</label>
+                    <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Enter your API key">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Theme</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <option>Light</option>
+                        <option>Dark</option>
+                        <option>System</option>
+                    </select>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="autoUpdate" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="autoUpdate" class="ml-2 block text-sm text-gray-700">Check for updates automatically</label>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button type="button" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 mr-2">
+                    Cancel
+                </button>
+                <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize JS components when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const { jsPDF } = window.jspdf;
+            
+            // UI State Management
+            let currentTab = 'securityFindings';
+            let auditInProgress = false;
+            let auditCancelled = false;
+            let scanResults = null;
+            
+            // DOM Elements
+            const auditForm = document.getElementById('auditForm');
+            const websiteUrl = document.getElementById('websiteUrl');
+            const auditType = document.getElementById('auditType');
+            const deviceType = document.getElementById('deviceType');
+            const startAuditBtn = document.getElementById('startAuditBtn');
+            const progressSection = document.getElementById('progressSection');
+            const progressBar = document.getElementById('progressBar');
+            const progressPercent = document.getElementById('progressPercent');
+            const auditStatusText = document.getElementById('auditStatusText');
+            const cancelAuditBtn = document.getElementById('cancelAuditBtn');
+            const resultsDashboard = document.getElementById('resultsDashboard');
+            const historyPanel = document.getElementById('historyPanel');
+            const securityStatus = document.getElementById('securityStatus');
+            const performanceStatus = document.getElementById('performanceStatus');
+            const seoStatus = document.getElementById('seoStatus');
+            const settingsModal = document.getElementById('settingsModal');
+            const settingsBtn = document.getElementById('settingsBtn');
+            const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+            const historyBtn = document.getElementById('historyBtn');
+            const exportPdfBtn = document.getElementById('exportPdf');
+            
+            // Chart variables
+            let performanceChart, securityChart, seoChart, overallGauge;
+            
+            // Initialize gauges and charts
+            function initCharts() {
+                // Overall Gauge
+                const gaugeCtx = document.getElementById('overallGauge').getContext('2d');
+                overallGauge = new Chart(gaugeCtx, {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [100, 0],
+                            backgroundColor: ['#3B82F6', '#F3F4F6'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        rotation: 1 * Math.PI,
+                        circumference: 1 * Math.PI,
+                        cutout: '75%',
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                    }
+                });
+                
+                // Performance Chart
+                const perfCtx = document.getElementById('performanceChart').getContext('2d');
+                performanceChart = new Chart(perfCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['First Contentful Paint', 'Speed Index', 'Largest Contentful Paint', 'Time to Interactive', 'Total Blocking Time', 'Cumulative Layout Shift'],
+                        datasets: [{
+                            label: 'Seconds',
+                            data: [2.3, 3.1, 2.8, 4.2, 0.12, 0.05],
+                            backgroundColor: [
+                                'rgba(59, 130, 246, 0.7)',
+                                'rgba(59, 130, 246, 0.7)',
+                                'rgba(59, 130, 246, 0.7)',
+                                'rgba(59, 130, 246, 0.7)',
+                                'rgba(59, 130,246, 0.7)',
+                                'rgba(59, 130, 246, 0.7)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Seconds' }
+                            }
+                        }
+                    }
+                });
+                
+                // Security Chart
+                const secCtx = document.getElementById('securityChart').getContext('2d');
+                securityChart = new Chart(secCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['HTTPS', 'Headers', 'Cookies', 'CSP', 'Vulnerabilities', 'Mixed Content'],
+                        datasets: [{
+                            label: 'Security Score',
+                            data: [90, 75, 80, 65, 85, 95],
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(239, 68, 68, 1)'
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: {
+                                angleLines: { display: true },
+                                suggestedMin: 0,
+                                suggestedMax: 100
+                            }
+                        }
+                    }
+                });
+                
+                // SEO Chart
+                const seoCtx = document.getElementById('seoChart').getContext('2d');
+                seoChart = new Chart(seoCtx, {
+                    type: 'polarArea',
+                    data: {
+                        labels: ['Meta Tags', 'Headings', 'Images', 'Structured Data', 'Links', 'Mobile'],
+                        datasets: [{
+                            data: [85, 90, 75, 60, 80, 95],
+                            backgroundColor: [
+                                'rgba(16, 185, 129, 0.7)',
+                                'rgba(16, 185, 129, 0.5)',
+                                'rgba(16, 185, 129, 0.3)',
+                                'rgba(16, 185, 129, 0.2)',
+                                'rgba(16, 185, 129, 0.4)',
+                                'rgba(16, 185, 129, 0.6)'
+                            ]
+                        }]
+                    }
+                });
+            }
+            
+            // Tab switching functionality
+            function setupTabs() {
+                // Chart tabs
+                document.querySelectorAll('#chartTabs a').forEach(tab => {
+                    tab.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        document.querySelectorAll('#chartTabs a').forEach(t => 
+                            t.classList.remove('text-blue-600', 'border-blue-500'));
+                        this.classList.add('text-blue-600', 'border-blue-500');
+                        
+                        document.querySelectorAll('.chart-content').forEach(content => 
+                            content.classList.add('hidden'));
+                        document.querySelector(this.getAttribute('href')).classList.remove('hidden');
+                    });
+                });
+                
+                // Findings tabs
+                document.querySelectorAll('.findings-tab').forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        if (this.classList.contains('active')) return;
+                        
+                        document.querySelectorAll('.findings-tab').forEach(t => 
+                            t.classList.remove('active', 'text-blue-600', 'border-blue-500'));
+                        this.classList.add('active', 'text-blue-600', 'border-blue-500');
+                        
+                        document.querySelectorAll('.findings-content').forEach(content => 
+                            content.classList.add('hidden'));
+                        document.getElementById(this.dataset.tab).classList.remove('hidden');
+                        
+                        currentTab = this.dataset.tab;
+                    });
+                });
+            }
+            
+            // Form submission handler
+            auditForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (auditInProgress) return;
+                if (!websiteUrl.value) {
+                    websiteUrl.focus();
+                    return;
+                }
+                
+                startAudit();
+            });
+            
+            // Start a new audit
+            function startAudit() {
+                auditInProgress = true;
+                auditCancelled = false;
+                
+                // UI Updates
+                startAuditBtn.disabled = true;
+                progressSection.classList.remove('hidden');
+                resultsDashboard.classList.add('hidden');
+                historyPanel.classList.add('hidden');
+                
+                // Reset progress
+                progressBar.style.width = '0%';
+                progressPercent.textContent = '0%';
+                auditStatusText.textContent = 'Initializing scanner...';
+                securityStatus.textContent = 'Pending';
+                performanceStatus.textContent = 'Pending';
+                seoStatus.textContent = 'Pending';
+                
+                // Simulate audit progress
+                simulateAuditProcess();
+            }
+            
+            // Cancel audit
+            cancelAuditBtn.addEventListener('click', function() {
+                if (auditInProgress) {
+                    auditCancelled = true;
+                    auditStatusText.textContent = 'Cancelling...';
+                }
+            });
+            
+            // Mock audit process with realistic timing
+            function simulateAuditProcess() {
+                let progress = 0;
+                const stages = [
+                    { progress: 5, status: 'Checking domain...' },
+                    { progress: 15, status: 'Connecting to target...' },
+                    { progress: 25, status: 'Running initial checks...', security: 15 },
+                    { progress: 40, status: 'Analyzing security headers...', security: 30 },
+                    { progress: 55, status: 'Scanning for vulnerabilities...', security: 70 },
+                    { progress: 65, status: 'Testing page speed...', performance: 20 },
+                    { progress: 75, status: 'Checking resources...', performance: 50 },
+                    { progress: 85, status: 'Analyzing SEO elements...', seo: 30 },
+                    { progress: 95, status: 'Generating report...', seo: 80, performance: 90, security: 95 },
+                    { progress: 100, status: 'Complete!', seo: 100, performance: 100, security: 100 }
+                ];
+                
+                const processStage = (index) => {
+                    if (index >= stages.length || auditCancelled) {
+                        if (auditCancelled) {
+                            auditStatusText.textContent = 'Audit cancelled';
+                            setTimeout(() => {
+                                progressSection.classList.add('hidden');
+                                startAuditBtn.disabled = false;
+                                auditInProgress = false;
+                            }, 1000);
+                            return;
+                        }
+                        
+                        // Audit complete
+                        completeAudit();
+                        return;
+                    }
+                    
+                    const stage = stages[index];
+                    progress = stage.progress;
+                    progressBar.style.width = `${progress}%`;
+                    progressPercent.textContent = `${progress}%`;
+                    auditStatusText.textContent = stage.status;
+                    
+                    if (stage.security !== undefined) {
+                        securityStatus.textContent = `${stage.security}%`;
+                    }
+                    if (stage.performance !== undefined) {
+                        performanceStatus.textContent = `${stage.performance}%`;
+                    }
+                    if (stage.seo !== undefined) {
+                        seoStatus.textContent = `${stage.seo}%`;
+                    }
+                    
+                    // Random delay between stages for realism (200ms - 1.5s)
+                    const delay = 200 + Math.random() * 1300;
+                    setTimeout(() => processStage(index + 1), delay);
+                };
+                
+                processStage(0);
+            }
+            
+            // Complete audit and show results
+            function completeAudit() {
+                auditInProgress = false;
+                
+                // Generate mock results
+                const securityScore = Math.floor(Math.random() * 30) + 70;
+                const performanceScore = Math.floor(Math.random() * 30) + 70;
+                const seoScore = Math.floor(Math.random() * 30) + 70;
+                const overallScore = Math.floor((securityScore + performanceScore + seoScore) / 3);
+                
+                // Update scores
+                document.getElementById('securityScore').textContent = securityScore;
+                document.getElementById('performanceScore').textContent = performanceScore;
+                document.getElementById('seoScore').textContent = seoScore;
+                document.getElementById('overallScore').textContent = overallScore;
+                
+                // Update gauge
+                updateGauge(overallGauge, overallScore);
+                
+                // Generate findings
+                generateFindings('security', securityScore, 'securityFindings');
+                generateFindings('performance', performanceScore, 'performanceFindings');
+                generateFindings('seo', seoScore, 'seoFindings');
+                
+                // Update charts with new data
+                updateCharts(securityScore, performanceScore, seoScore);
+                
+                // Update UI
+                progressSection.classList.add('hidden');
+                resultsDashboard.classList.remove('hidden');
+                historyPanel.classList.add('hidden');
+                startAuditBtn.disabled = false;
+            }
+            
+            // Update gauge chart with score
+            function updateGauge(gauge, score) {
+                gauge.data.datasets[0].data = [score, 100 - score];
+                gauge.update();
+                
+                // Update overall grade text
+                const gradeText = document.getElementById('overallGrade');
+                if (score >= 90) {
+                    gradeText.textContent = 'Excellent';
+                    gradeText.className = 'text-sm font-medium text-green-600';
+                } else if (score >= 70) {
+                    gradeText.textContent = 'Good';
+                    gradeText.className = 'text-sm font-medium text-blue-600';
+                } else if (score >= 50) {
+                    gradeText.textContent = 'Fair';
+                    gradeText.className = 'text-sm font-medium text-yellow-600';
+                } else {
+                    gradeText.textContent = 'Poor';
+                    gradeText.className = 'text-sm font-medium text-red-600';
+                }
+            }
+            
+            // Generate mock findings for each category
+            function generateFindings(type, score, containerId) {
+                const container = document.getElementById(containerId);
+                
+                // Clear existing findings
+                container.innerHTML = '';
+                
+                // Determine how many issues to generate based on score
+                const issueCount = Math.floor((100 - score) / 10);
+                
+                if (issueCount <= 0) {
+                    container.innerHTML = `
+                        <div class="flex items-center justify-center py-12 text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            Excellent! No ${type} issues found.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Sample findings for each category
+                const securityFindings = [
+                    { title: 'Missing Content Security Policy', severity: 'High', description: 'Add Content-Security-Policy header to mitigate XSS attacks' },
+                    { title: 'X-XSS-Protection Header Missing', severity: 'Medium', description: 'Enable XSS protection for older browsers' },
+                    { title: 'Insecure Cookies', severity: 'High', description: 'Set Secure and HttpOnly flags on session cookies' },
+                    { title: 'Exposed Server Version', severity: 'Low', description: 'Remove server version from headers' },
+                    { title: 'Mixed Content Detected', severity: 'Medium', description: 'Load all resources over HTTPS' }
+                ];
+                
+                const performanceFindings = [
+                    { title: 'Unoptimized Images', severity: 'Medium', description: 'Compress images to reduce transfer size' },
+                    { title: 'Render-Blocking Resources', severity: 'High', description: 'Defer non-critical JS/CSS' },
+                    { title: 'No Caching Headers', severity: 'Medium', description: 'Set proper cache headers for static assets' },
+                    { title: 'Large DOM Size', severity: 'Low', description: 'Reduce DOM elements to improve rendering' },
+                    { title: 'Excessive JavaScript', severity: 'High', description: 'Reduce unused JavaScript and code-split' }
+                ];
+                
+                const seoFindings = [
+                    { title: 'Missing Meta Description', severity: 'Low', description: 'Add unique meta descriptions under 160 chars' },
+                    { title: 'No Structured Data', severity: 'Medium', description: 'Implement schema.org markup' },
+                    { title: 'Missing Alt Text', severity: 'Low', description: 'Add descriptive alt attributes to images' },
+                    { title: 'Blocked Resources', severity: 'Medium', description: 'Allow crawlers to access important resources' },
+                    { title: 'Duplicate Page Titles', severity: 'High', description: 'Make sure each page has a unique title' }
+                ];
+                
+                // Select appropriate findings based on type
+                const findings = type === 'security' ? securityFindings : 
+                                type === 'performance' ? performanceFindings : seoFindings;
+                                
+                // Shuffle and slice to get random findings
+                const selectedFindings = [...findings]
+                    .sort(() => 0.5 - Math.random())
+                    .slice(0, issueCount);
+                
+                // Create findings elements
+                selectedFindings.forEach(finding => {
+                    const findingEl = document.createElement('div');
+                    findingEl.className = 'finding-item p-3 mb-3 border rounded-md hover:bg-gray-50';
+                    findingEl.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-start">
+                                <span class="mt-1 mr-3 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                    finding.severity === 'High' ? 'bg-red-100 text-red-800' : 
+                                    finding.severity === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'
+                                }">
+                                    ${finding.severity}
+                                </span>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">${finding.title}</h4>
+                                    <p class="text-sm text-gray-600 mt-1">${finding.description}</p>
+                                </div>
+                            </div>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Fix</button>
+                        </div>
+                    `;
+                    container.appendChild(findingEl);
+                });
+            }
+            
+            // Update charts with new score data
+            function updateCharts(securityScore, performanceScore, seoScore) {
+                // Performance chart - randomize data within score range
+                performanceChart.data.datasets[0].data = [
+                    randomInRange(performanceScore / 40, 3),   // FCP
+                    randomInRange(performanceScore / 30, 4),   // Speed Index
+                    randomInRange(performanceScore / 35, 3.5), // LCP
+                    randomInRange(performanceScore / 25, 5),   // TTI
+                    randomInRange(0.15, 0.01),                 // TBT
+                    randomInRange(0.1, 0.01)                   // CLS
+                ];
+                performanceChart.update();
+                
+                // Security radar chart
+                securityChart.data.datasets[0].data = [
+                    randomInRange(securityScore, 15),   // HTTPS
+                    randomInRange(securityScore, 20),   // Headers
+                    randomInRange(securityScore, 25),   // Cookies
+                    randomInRange(securityScore, 30),   // CSP
+                    randomInRange(securityScore, 15),   // Vulnerabilities
+                    randomInRange(securityScore, 10)    // Mixed Content
+                ];
+                securityChart.update();
+                
+                // SEO polar chart
+                seoChart.data.datasets[0].data = [
+                    randomInRange(seoScore, 15),     // Meta Tags
+                    randomInRange(seoScore, 10),     // Headings
+                    randomInRange(seoScore, 20),     // Images
+                    randomInRange(seoScore, 25),     // Structured Data
+                    randomInRange(seoScore, 15),     // Links
+                    randomInRange(seoScore, 5)       // Mobile
+                ];
+                seoChart.update();
+            }
+            
+            // Helper for random values within score range
+            function randomInRange(base, variation) {
+                return Math.max(10, Math.min(100, 
+                    (base + (Math.random() * variation * 2 - variation))));
+            }
+            
+            // Generate PDF report
+            exportPdfBtn.addEventListener('click', function() {
+                const loadingIndicator = document.createElement('div');
+                loadingIndicator.className = 'absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-50';
+                loadingIndicator.innerHTML = `
+                    <div class="text-center p-6 rounded-lg">
+                        <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                        <p class="mt-4 text-gray-700">Generating PDF report...</p>
+                    </div>
+                `;
+                document.body.appendChild(loadingIndicator);
+                
+                setTimeout(() => {
+                    html2canvas(document.querySelector('#resultsDashboard')).then(canvas => {
+                        const imgData = canvas.toDataURL('image/png');
+                        const pdf = new jsPDF('p', 'mm', 'a4');
+                        const pageWidth = pdf.internal.pageSize.getWidth();
+                        const pageHeight = pdf.internal.pageSize.getHeight();
+                        const imgWidth = pageWidth;
+                        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                        
+                        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                        pdf.save('website-audit-report.pdf');
+                        document.body.removeChild(loadingIndicator);
+                    });
+                }, 1000);
+            });
+            
+            // Toggle history panel
+            historyBtn.addEventListener('click', function() {
+                resultsDashboard.classList.add('hidden');
+                historyPanel.classList.toggle('hidden');
+            });
+            
+            // Settings modal
+            settingsBtn.addEventListener('click', function() {
+                settingsModal.classList.remove('hidden');
+            });
+            
+            closeSettingsBtn.addEventListener('click', function() {
+                settingsModal.classList.add('hidden');
+            });
+            
+            // Close modal when clicking outside
+            settingsModal.addEventListener('click', function(e) {
+                if (e.target === settingsModal) {
+                    settingsModal.classList.add('hidden');
+                }
+            });
+            
+            // Initialize everything
+            initCharts();
+            setupTabs();
+        });
+    </script>
+</body>
+</html>
