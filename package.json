@@ -1,0 +1,37 @@
+{
+    "name": "webcheck_pro",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Website Audit Tool with Smart Scoring (Hackathon Edition)",
+    "main": "server.js",
+
+    "scripts": {
+        "server": "node server.js",
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "axe-core": "4.10.0",
+        "chrome-launcher": "1.1.0",
+        "cors": "2.8.5",
+        "express": "4.19.2",
+        "express-rate-limit": "6.7.0",
+        "helmet": "7.1.0",
+        "lighthouse": "11.5.0",
+        "lru-cache": "10.2.2",
+        "node-fetch": "2.7.0",
+        "p-queue": "7.4.1",
+        "puppeteer": "22.15.0",
+        "react": "^19.1.1",
+        "react-dom": "^19.1.1"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-react": "^5.0.1",
+        "autoprefixer": "^10.4.21",
+        "nodemon": "3.1.0",
+        "postcss": "^8.5.6",
+        "tailwindcss": "^3.4.10",
+        "vite": "^7.1.3"
+    }
+}
