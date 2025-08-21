@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enterprise Website Auditor - Complete</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+body {
+background-image: url('https://plus.unsplash.com/premium_photo-1661964187664-e26f70e1a224?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y29kaW5nJTIwYmFja2dyb3VuZHxlbnwwfHwwfHx8MA%3D%3D');
+background-size: cover;
+background-position: center center;
+background-repeat: no-repeat;
+}
+@keyframes pulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.5; }
+}
+.loading-pulse { animation: pulse 1.5s ease-in-out infinite; }
+.progress-bar { transition: width 0.6s ease; }
+.security-critical { box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.5); }
+body.dark .bg-gray-50, body.dark .bg-gray-100 { background-color: #121212; color: #e2e8f0; }
+body.dark .bg-white { background-color: #1e1e1e; color: #e2e8f0; }
+body.dark .text-gray-800 { color: #e2e8f0; }
+body.dark .text-gray-500 { color: #a0aec0; }
+body.dark .border-gray-300 { border-color: #4a5568; }
+body.dark .border-gray-200 { border-color: #3f3f3f; }
+body.dark input, body.dark select { background-color: #2d3748; color: #e2e8f0; border-color: #4a5568; }
+body.dark input::placeholder { color: #a0aec0; }
+body.dark .hover\:bg-gray-50:hover { background-color: #2a2a2a; }
+body.dark .hover\:bg-gray-100:hover { background-color: #2a2a2a; }
+body.dark .hover\:text-gray-600:hover { color: #f7fafc; }
+body.dark .bg-gray-50 { background-color: #1a202c; }
+body.dark .findings-tab.active { border-color: #3b82f6 !important; }
+.findings-tab.active { border-color: #3b82f6 !important; }
+.border-highlight-dark { box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5); }
+
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800 transition-colors duration-300">
+<div class="max-w-7xl mx-auto px-4 py-8">
+<header class="mb-8 border-b pb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+    <div class="flex items-center mb-4 sm:mb-0">
+        <img src="logo.jpg" alt="Enterprise shield logo with checkmark badge" class="w-10 h-10 mr-3">
+        <div>
+            <!-- Removed black text, kept only white text -->
+            <h1 class="text-2xl sm:text-3xl font-bold text-white">Enterprise Website Auditor</h1>
+            <p class="text-sm text-white">Comprehensive security, performance and compliance analysis</p>
+        </div>
+    </div>
+    <div class="flex space-x-2">
+<button id="historyBtn" class="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-md flex items-center transition-colors duration-200">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+</svg>
+History
+</button>
+<button id="settingsBtn" class="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-md flex items-center transition-colors duration-200">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+</svg>
+Settings
+</button>
+</div>
+</header>
+
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+<div class="lg:col-span-1 space-y-4">
+<div class="bg-white rounded-xl shadow-sm p-4 transition-colors duration-300">
+<h3 class="font-medium mb-3">Quick Audit</h3>
+<form id="auditForm" class="space-y-3">
+<div>
+<label for="websiteUrl" class="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
+<input type="url" id="websiteUrl" required
+class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+placeholder="https://example.com">
+</div>
+<div>
+<label for="auditType" class="block text-sm font-medium text-gray-700 mb-1">Audit Type</label>
+<select id="auditType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+<option value="full">Full Audit</option>
+<option value="security">Security Only</option>
+<option value="performance">Performance Only</option>
+<option value="seo">SEO Only</option>
+</select>
+</div>
+<div>
+<label for="deviceType" class="block text-sm font-medium text-gray-700 mb-1">Device</label>
+<select id="deviceType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+<option value="desktop">Desktop</option>
+<option value="mobile">Mobile</option>
+</select>
+</div>
+<button type="submit" id="startAuditBtn" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center transition-colors duration-200">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+</svg>
+Start Audit
+</button>
+</form>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm p-4 transition-colors duration-300">
+<div class="flex items-center justify-between mb-3">
+<h3 class="font-medium">Saved Websites</h3>
+<button id="addWebsiteBtn" class="text-blue-600 hover:text-blue-800 text-sm transition-colors duration-200">+ Add</button>
+</div>
+<div id="savedWebsitesList" class="space-y-2 max-h-60 overflow-y-auto">
+</div>
+</div>
+</div>
+
+<div class="lg:col-span-3 space-y-6">
+<div id="progressSection" class="hidden bg-white rounded-xl shadow-sm p-5 transition-colors duration-300">
+<div class="flex items-center justify-between mb-4">
+<div>
+<h3 class="font-medium">Audit in Progress</h3>
+<p class="text-sm text-gray-500" id="auditStatusText">Initializing scanner</p>
+</div>
+<div class="flex items-center space-x-2">
+<span id="progressPercent" class="font-medium">0%</span>
+<button id="cancelAuditBtn" class="text-sm text-red-600 hover:text-red-800 flex items-center transition-colors duration-200">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+</svg>
+Cancel
+</button>
+</div>
+</div>
+<div class="w-full bg-gray-200 rounded-full h-2">
+<div id="progressBar" class="progress-bar bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+</div>
+<div class="grid grid-cols-3 gap-4 mt-4 text-sm">
+<div>
+<p class="text-gray-500">Security Scan</p>
+<p id="securityStatus" class="font-medium">Pending</p>
+</div>
+<div>
+<p class="text-gray-500">Performance</p>
+<p id="performanceStatus" class="font-medium">Pending</p>
+</div>
+<div>
+<p class="text-gray-500">SEO Analysis</p>
+<p id="seoStatus" class="font-medium">Pending</p>
+</div>
+</div>
+</div>
+
+<div id="resultsDashboard" class="hidden">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<div class="bg-white rounded-xl shadow-sm p-5 flex flex-col items-center justify-center border-t-4 border-blue-500 transition-colors duration-300">
+<p class="text-sm text-gray-500 mb-1">Overall Score</p>
+<div class="relative w-20 h-20 mb-2">
+<canvas id="overallGauge"></canvas>
+<div id="overallScore" class="absolute inset-0 flex items-center justify-center text-2xl font-bold">-</div>
+</div>
+<p id="overallGrade" class="text-sm font-medium">Not Scored</p>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm p-5 border-t-4 border-red-500 transition-colors duration-300">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="text-sm text-gray-500">Security</p>
+<p id="securityScore" class="text-2xl font-bold">-</p>
+</div>
+<div id="securityTrend" class="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-800 flex items-center hidden">
+</div>
+</div>
+<div class="flex justify-between text-xs text-gray-500">
+<span id="securityVulnerabilities">0 vulnerabilities</span>
+<span id="securityPassed">5 passed</span>
+</div>
+<div class="w-full bg-gray-200 rounded-full h-1 mt-1">
+<div id="securityProgressBar" class="bg-red-500 h-1 rounded-full" style="width: 0%"></div>
+</div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm p-5 border-t-4 border-yellow-500 transition-colors duration-300">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="text-sm text-gray-500">Performance</p>
+<p id="performanceScore" class="text-2xl font-bold">-</p>
+</div>
+<div id="performanceTrend" class="text-xs px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-800 flex items-center hidden">
+</div>
+</div>
+<div class="flex justify-between text-xs text-gray-500">
+<span id="performanceLoadTime">3.2s load</span>
+<span>First Contentful Paint</span>
+</div>
+<div class="w-full bg-gray-200 rounded-full h-1 mt-1">
+<div id="performanceProgressBar" class="bg-yellow-500 h-1 rounded-full" style="width: 0%"></div>
+</div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm p-5 border-t-4 border-green-500 transition-colors duration-300">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="text-sm text-gray-500">SEO</p>
+<p id="seoScore" class="text-2xl font-bold">-</p>
+</div>
+<div id="seoTrend" class="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-800 flex items-center hidden">
+</div>
+</div>
+<div class="flex justify-between text-xs text-gray-500">
+<span id="seoIssues">5 issues</span>
+<span id="seoPassed">8 passed</span>
+</div>
+<div class="w-full bg-gray-200 rounded-full h-1 mt-1">
+<div id="seoProgressBar" class="bg-green-500 h-1 rounded-full" style="width: 0%"></div>
+</div>
+</div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm p-5 mt-5 transition-colors duration-300">
+<ul class="flex border-b border-gray-200" id="chartTabs">
+<li class="mr-1">
+<a class="bg-white inline-block py-2 px-4 text-blue-600 font-medium border-b-2 border-blue-500 rounded-t-lg" href="#performanceChartTab">Performance</a>
+</li>
+<li class="mr-1">
+<a class="inline-block py-2 px-4 text-gray-500 hover:text-gray-600 font-medium" href="#securityChartTab">Security</a>
+</li>
+<li class="mr-1">
+<a class="inline-block py-2 px-4 text-gray-500 hover:text-gray-600 font-medium" href="#seoChartTab">SEO</a>
+</li>
+</ul>
+<div class="py-4">
+<div id="performanceChartTab" class="chart-content">
+<div class="h-64">
+<canvas id="performanceChart"></canvas>
+</div>
+</div>
+<div id="securityChartTab" class="chart-content hidden">
+<div class="h-64">
+<canvas id="securityChart"></canvas>
+</div>
+</div>
+<div id="seoChartTab" class="chart-content hidden">
+<div class="h-64">
+<canvas id="seoChart"></canvas>
+</div>
+</div>
+</div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm overflow-hidden mt-5 transition-colors duration-300">
+<div class="border-b border-gray-200">
+<nav class="flex -mb-px">
+<button class="findings-tab active" data-tab="securityFindings">
+Security (<span id="securityIssueCount">0</span>)
+</button>
+<button class="findings-tab" data-tab="performanceFindings">
+Performance (<span id="performanceIssueCount">0</span>)
+</button>
+<button class="findings-tab" data-tab="seoFindings">
+SEO (<span id="seoIssueCount">0</span>)
+</button>
+<button class="findings-tab" data-tab="waterfall">
+Waterfall
+</button>
+<div class="ml-auto flex items-center px-4">
+<button id="exportPdf" class="text-sm text-blue-600 hover:text-blue-800 flex items-center px-2 py-1 transition-colors duration-200">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+</svg>
+Export PDF
+</button>
+</div>
+</nav>
+</div>
+<div class="p-4">
+<div id="securityFindings" class="findings-content"></div>
+<div id="performanceFindings" class="findings-content hidden"></div>
+<div id="seoFindings" class="findings-content hidden"></div>
+<div id="waterfall" class="findings-content hidden">
+<p class="text-gray-500 py-12 text-center">Waterfall chart functionality not implemented in this version.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="historyPanel" class="hidden bg-white rounded-xl shadow-sm p-5 transition-colors duration-300">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-medium">Audit History</h3>
+<button id="clearHistoryBtn" class="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200">Clear All</button>
+</div>
+<div id="historyList" class="space-y-3">
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="settingsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
+<div class="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 transition-colors duration-300">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-lg font-medium">Application Settings</h3>
+<button id="closeSettingsBtn" class="text-gray-400 hover:text-gray-500 transition-colors duration-200">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+</svg>
+</button>
+</div>
+<div class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1">API Key</label>
+<input type="password" id="apiKeyInput" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" placeholder="Enter your API key">
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1">Theme</label>
+<select id="themeSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+<option value="light">Light</option>
+<option value="dark">Dark</option>
+</select>
+</div>
+<div class="flex items-center">
+<input type="checkbox" id="autoUpdate" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors duration-200">
+<label for="autoUpdate" class="ml-2 block text-sm text-gray-700">Check for updates automatically</label>
+</div>
+</div>
+<div class="mt-6 flex justify-end">
+<button id="cancelSettingsBtn" type="button" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 mr-2 transition-colors duration-200">
+Cancel
+</button>
+<button id="saveSettingsBtn" type="button" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200">
+Save Changes
+</button>
+</div>
+</div>
+</div>
+
+<!-- AI Suggestion Modal -->
+<div id="aiSuggestionModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 transition-colors duration-300">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium" id="aiSuggestionTitle">AI Fix Suggestion</h3>
+            <button id="closeAiSuggestionModal" class="text-gray-400 hover:text-gray-500 transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div id="aiSuggestionContent" class="text-gray-700 space-y-3">
+            <!-- AI suggestion will be loaded here -->
+        </div>
+        <div class="mt-6 flex justify-end">
+            <button id="copySuggestionBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200">
+                Copy Suggestion
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<div id="suggestionPanel" class="fixed bottom-6 right-6 z-50 bg-white bg-opacity-90 rounded-xl shadow-xl p-6 max-w-sm w-full border border-blue-200 hidden">
+<h4 class="text-lg font-bold mb-2 text-blue-700">Get Improvement Suggestions</h4>
+<p class="text-gray-700 mb-3">Want expert feedback on your website? Request a review and get actionable suggestions to improve your site's security, performance, and SEO.</p>
+<form id="suggestionForm" class="space-y-2">
+<input type="email" id="userEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Your email for suggestions" required>
+<button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors">Request Suggestions</button>
+</form>
+<div id="suggestionMsg" class="mt-2 text-green-600 font-medium hidden"></div>
+<button id="closeSuggestionPanel" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+</div>
+<button id="openSuggestionPanel" class="fixed bottom-6 right-6 z-40 bg-blue-600 text-white px-5 py-3 rounded-full shadow-lg font-bold hover:bg-blue-700 transition-colors">Get Suggestions</button>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const { jsPDF } = window.jspdf;
+
+// Enhanced SITE_DATA with more granular metrics for dynamic generation
+const SITE_DATA = {
+    'https://example.com': {
+        security: { isHttps: true, hasCsp: false, hasInsecureCookies: true, hasOldHeaders: false, xssProtection: false, sslVersion: 'TLSv1.2' },
+        performance: { loadTime: 3.2, unoptimizedImages: true, renderBlocking: true, largeDom: false, caching: false, fcp: 1.8, lcp: 2.5, tti: 3.0, tbt: 0.3, cls: 0.1 },
+        seo: { hasMetaDescription: false, hasAltText: true, hasStructuredData: false, isMobileFriendly: true, hasDuplicateTitles: false, sitemap: false, robotsTxt: true, brokenLinks: true }
+    },
+    'https://google.com': {
+        security: { isHttps: true, hasCsp: true, hasInsecureCookies: false, hasOldHeaders: false, xssProtection: true, sslVersion: 'TLSv1.3' },
+        performance: { loadTime: 1.5, unoptimizedImages: false, renderBlocking: false, largeDom: false, caching: true, fcp: 0.8, lcp: 1.2, tti: 1.5, tbt: 0.05, cls: 0.01 },
+        seo: { hasMetaDescription: true, hasAltText: true, hasStructuredData: true, isMobileFriendly: true, hasDuplicateTitles: false, sitemap: true, robotsTxt: true, brokenLinks: false }
+    },
+    'https://old-site.com': {
+        security: { isHttps: false, hasCsp: false, hasInsecureCookies: true, hasOldHeaders: true, xssProtection: false, sslVersion: 'TLSv1.0' },
+        performance: { loadTime: 6.8, unoptimizedImages: true, renderBlocking: true, largeDom: true, caching: false, fcp: 4.0, lcp: 5.5, tti: 6.0, tbt: 0.8, cls: 0.3 },
+        seo: { hasMetaDescription: false, hasAltText: false, hasStructuredData: false, isMobileFriendly: false, hasDuplicateTitles: true, sitemap: false, robotsTxt: false, brokenLinks: true }
+    }
+};
+
+// DOM Elements
+const auditForm = document.getElementById('auditForm');
+const websiteUrlInput = document.getElementById('websiteUrl');
+const startAuditBtn = document.getElementById('startAuditBtn');
+const progressSection = document.getElementById('progressSection');
+const resultsDashboard = document.getElementById('resultsDashboard');
+const historyPanel = document.getElementById('historyPanel');
+const settingsModal = document.getElementById('settingsModal');
+const settingsBtn = document.getElementById('settingsBtn');
+const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
+const themeSelect = document.getElementById('themeSelect');
+const apiKeyInput = document.getElementById('apiKeyInput');
+const historyBtn = document.getElementById('historyBtn');
+const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+const historyList = document.getElementById('historyList');
+const savedWebsitesList = document.getElementById('savedWebsitesList');
+const addWebsiteBtn = document.getElementById('addWebsiteBtn');
+const exportPdfBtn = document.getElementById('exportPdf');
+const suggestionPanel = document.getElementById('suggestionPanel');
+const openSuggestionPanel = document.getElementById('openSuggestionPanel');
+const closeSuggestionPanel = document.getElementById('closeSuggestionPanel');
+const suggestionForm = document.getElementById('suggestionForm');
+const suggestionMsg = document.getElementById('suggestionMsg');
+
+// AI Suggestion Modal Elements
+const aiSuggestionModal = document.getElementById('aiSuggestionModal');
+const closeAiSuggestionModal = document.getElementById('closeAiSuggestionModal');
+const aiSuggestionTitle = document.getElementById('aiSuggestionTitle');
+const aiSuggestionContent = document.getElementById('aiSuggestionContent');
+const copySuggestionBtn = document.getElementById('copySuggestionBtn');
+
+
+// UI State Management
+let auditInProgress = false;
+let currentResults = null;
+let currentSettings = {
+theme: 'light',
+apiKey: '',
+autoUpdate: false
+};
+let savedWebsites = JSON.parse(localStorage.getItem('savedWebsites')) || [];
+let auditHistory = JSON.parse(localStorage.getItem('auditHistory')) || [];
+
+// Chart variables
+let performanceChart, securityChart, seoChart, overallGauge;
+
+// --- Initialization Functions ---
+function init() {
+loadSettings();
+initCharts();
+setupTabs();
+renderSavedWebsites();
+renderAuditHistory();
+}
+
+function initCharts() {
+const gaugeCtx = document.getElementById('overallGauge').getContext('2d');
+overallGauge = new Chart(gaugeCtx, {
+type: 'doughnut',
+data: {
+datasets: [{ data: [100, 0], backgroundColor: ['#3B82F6', '#F3F4F6'], borderWidth: 0 }]
+},
+options: { rotation: 1 * Math.PI, circumference: 1 * Math.PI, cutout: '75%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+});
+const perfCtx = document.getElementById('performanceChart').getContext('2d');
+performanceChart = new Chart(perfCtx, {
+type: 'bar',
+data: { labels: ['FCP', 'Speed Index', 'LCP', 'TTI', 'TBT', 'CLS'], datasets: [{ label: 'Seconds', data: [], backgroundColor: 'rgba(59, 130, 246, 0.7)' }] },
+options: { responsive: true, scales: { y: { beginAtZero: true, title: { display: true, text: 'Seconds' } } }, plugins: { legend: { display: false } } }
+});
+const secCtx = document.getElementById('securityChart').getContext('2d');
+securityChart = new Chart(secCtx, {
+type: 'radar',
+data: { labels: ['HTTPS', 'Headers', 'Cookies', 'CSP', 'XSS Protection', 'SSL Version'], datasets: [{ label: 'Security Score', data: [], backgroundColor: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 1)', pointBackgroundColor: 'rgba(239, 68, 68, 1)', pointBorderColor: '#fff', pointHoverBackgroundColor: '#fff', pointHoverBorderColor: 'rgba(239, 68, 68, 1)' }] },
+options: { scales: { r: { angleLines: { display: true }, suggestedMin: 0, suggestedMax: 100 } }, plugins: { legend: { display: false } } }
+});
+const seoCtx = document.getElementById('seoChart').getContext('2d');
+seoChart = new Chart(seoCtx, {
+type: 'polarArea',
+data: { labels: ['Meta Tags', 'Headings', 'Images', 'Structured Data', 'Sitemap', 'Mobile Friendly'], datasets: [{ data: [], backgroundColor: [ 'rgba(16, 185, 129, 0.7)', 'rgba(16, 185, 129, 0.5)', 'rgba(16, 185, 129, 0.3)', 'rgba(16, 185, 129, 0.2)', 'rgba(16, 185, 129, 0.4)', 'rgba(16, 185, 129, 0.6)' ] }] },
+options: { plugins: { legend: { position: 'right' } } }
+});
+}
+
+function setupTabs() {
+document.querySelectorAll('#chartTabs a').forEach(tab => {
+tab.addEventListener('click', function(e) {
+e.preventDefault();
+document.querySelectorAll('#chartTabs a').forEach(t => t.classList.remove('text-blue-600', 'border-blue-500'));
+this.classList.add('text-blue-600', 'border-blue-500');
+document.querySelectorAll('.chart-content').forEach(content => content.classList.add('hidden'));
+document.querySelector(this.getAttribute('href')).classList.remove('hidden');
+});
+});
+document.querySelectorAll('.findings-tab').forEach(tab => {
+tab.addEventListener('click', function() {
+document.querySelectorAll('.findings-tab').forEach(t => t.classList.remove('active', 'text-blue-600', 'border-blue-500'));
+this.classList.add('active', 'text-blue-600', 'border-blue-500');
+document.querySelectorAll('.findings-content').forEach(content => content.classList.add('hidden'));
+document.getElementById(this.dataset.tab).classList.remove('hidden');
+});
+});
+
+// Delegated event listener for fix buttons
+document.querySelectorAll('.findings-content').forEach(container => {
+    container.addEventListener('click', function(e) {
+        if (e.target.classList.contains('fix-button')) {
+            const findingIndex = e.target.dataset.findingIndex;
+            const findingType = e.target.dataset.findingType;
+            if (currentResults && currentResults.findings[findingType] && currentResults.findings[findingType][findingIndex]) {
+                showFixSuggestion(currentResults.findings[findingType][findingIndex]);
+            }
+        }
+    });
+});
+}
+
+// --- Audit Logic ---
+auditForm.addEventListener('submit', function(e) {
+e.preventDefault();
+if (auditInProgress || !websiteUrlInput.value) return;
+startAudit();
+});
+
+function startAudit() {
+auditInProgress = true;
+const url = websiteUrlInput.value;
+const auditType = document.getElementById('auditType').value;
+const deviceType = document.getElementById('deviceType').value;
+startAuditBtn.disabled = true;
+progressSection.classList.remove('hidden');
+resultsDashboard.classList.add('hidden');
+historyPanel.classList.add('hidden');
+
+document.getElementById('progressBar').style.width = '0%';
+document.getElementById('progressPercent').textContent = '0%';
+document.getElementById('auditStatusText').textContent = 'Initializing scanner...';
+document.getElementById('securityStatus').textContent = 'Pending';
+document.getElementById('performanceStatus').textContent = 'Pending';
+document.getElementById('seoStatus').textContent = 'Pending';
+
+let progress = 0;
+const totalStages = 10;
+let currentStage = 0;
+
+const interval = setInterval(() => {
+if (progress >= 100 || !auditInProgress) {
+clearInterval(interval);
+if (!auditInProgress) {
+document.getElementById('auditStatusText').textContent = 'Audit cancelled';
+setTimeout(() => {
+progressSection.classList.add('hidden');
+startAuditBtn.disabled = false;
+}, 1000);
+} else {
+completeAudit(url, auditType, deviceType);
+}
+return;
+}
+currentStage++;
+progress = Math.min(100, Math.floor((currentStage / totalStages) * 100));
+document.getElementById('progressBar').style.width = `${progress}%`;
+document.getElementById('progressPercent').textContent = `${progress}%`;
+
+// Simulate status updates
+if (currentStage === 3) document.getElementById('securityStatus').textContent = 'Scanning...';
+if (currentStage === 6) document.getElementById('performanceStatus').textContent = 'Analyzing...';
+if (currentStage === 9) document.getElementById('seoStatus').textContent = 'Checking...';
+
+}, 300); // Faster progress for demo
+}
+
+document.getElementById('cancelAuditBtn').addEventListener('click', function() {
+auditInProgress = false;
+});
+
+function completeAudit(url, auditType, deviceType) {
+auditInProgress = false;
+const simulatedSiteData = generateRandomAuditData(url); // Generate dynamic data
+
+const securityFindings = generateSecurityFindings(simulatedSiteData.security);
+const performanceFindings = generatePerformanceFindings(simulatedSiteData.performance);
+const seoFindings = generateSeoFindings(simulatedSiteData.seo);
+
+const securityScore = calculateScore(securityFindings);
+const performanceScore = calculateScore(performanceFindings);
+const seoScore = calculateScore(seoFindings);
+const overallScore = Math.floor((securityScore + performanceScore + seoScore) / 3);
+
+const findings = {
+security: securityFindings,
+performance: performanceFindings,
+seo: seoFindings
+};
+
+currentResults = { url, overallScore, securityScore, performanceScore, seoScore, findings, timestamp: new Date(), auditType, deviceType, simulatedSiteData };
+updateDashboard(currentResults);
+addAuditToHistory(currentResults);
+
+progressSection.classList.add('hidden');
+resultsDashboard.classList.remove('hidden');
+startAuditBtn.disabled = false;
+}
+
+/**
+ * Generates dynamic audit data for a given URL.
+ * If the URL is in SITE_DATA, it uses that as a base and adds some randomness.
+ * Otherwise, it generates completely random data.
+ */
+function generateRandomAuditData(url) {
+    const baseData = SITE_DATA[url] || { // Fallback to a default structure if URL not found
+        security: { isHttps: true, hasCsp: true, hasInsecureCookies: false, hasOldHeaders: false, xssProtection: true, sslVersion: 'TLSv1.3' },
+        performance: { loadTime: 2.0, unoptimizedImages: false, renderBlocking: false, largeDom: false, caching: true, fcp: 1.0, lcp: 1.5, tti: 1.8, tbt: 0.1, cls: 0.05 },
+        seo: { hasMetaDescription: true, hasAltText: true, hasStructuredData: true, isMobileFriendly: true, hasDuplicateTitles: false, sitemap: true, robotsTxt: true, brokenLinks: false }
+    };
+
+    const randomBool = () => Math.random() > 0.5;
+    const randomScore = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const randomTime = (base, variance) => parseFloat((base + (Math.random() * variance * 2 - variance)).toFixed(2));
+
+    return {
+        security: {
+            isHttps: baseData.security.isHttps || randomBool(),
+            hasCsp: baseData.security.hasCsp || randomBool(),
+            hasInsecureCookies: baseData.security.hasInsecureCookies || randomBool(),
+            hasOldHeaders: baseData.security.hasOldHeaders || randomBool(),
+            xssProtection: baseData.security.xssProtection || randomBool(),
+            sslVersion: baseData.security.sslVersion === 'TLSv1.3' ? 'TLSv1.3' : (randomBool() ? 'TLSv1.2' : 'TLSv1.3')
+        },
+        performance: {
+            loadTime: randomTime(baseData.performance.loadTime, 1.0),
+            unoptimizedImages: baseData.performance.unoptimizedImages || randomBool(),
+            renderBlocking: baseData.performance.renderBlocking || randomBool(),
+            largeDom: baseData.performance.largeDom || randomBool(),
+            caching: baseData.performance.caching || randomBool(),
+            fcp: randomTime(baseData.performance.fcp, 0.5),
+            lcp: randomTime(baseData.performance.lcp, 0.7),
+            tti: randomTime(baseData.performance.tti, 0.8),
+            tbt: randomTime(baseData.performance.tbt, 0.1),
+            cls: randomTime(baseData.performance.cls, 0.02)
+        },
+        seo: {
+            hasMetaDescription: baseData.seo.hasMetaDescription || randomBool(),
+            hasAltText: baseData.seo.hasAltText || randomBool(),
+            hasStructuredData: baseData.seo.hasStructuredData || randomBool(),
+            isMobileFriendly: baseData.seo.isMobileFriendly || randomBool(),
+            hasDuplicateTitles: baseData.seo.hasDuplicateTitles || randomBool(),
+            sitemap: baseData.seo.sitemap || randomBool(),
+            robotsTxt: baseData.seo.robotsTxt || randomBool(),
+            brokenLinks: baseData.seo.brokenLinks || randomBool()
+        }
+    };
+}
+
+
+function calculateScore(findings) {
+let score = 100;
+findings.forEach(f => {
+if (f.severity === 'High') score -= 20;
+else if (f.severity === 'Medium') score -= 10;
+else if (f.severity === 'Low') score -= 5;
+});
+return Math.max(0, score);
+}
+
+function generateSecurityFindings(data) {
+const findings = [];
+if (!data.isHttps) findings.push({ title: 'Missing HTTPS', severity: 'High', description: 'Site is not using a secure HTTPS connection.' });
+if (!data.hasCsp) findings.push({ title: 'Missing Content Security Policy', severity: 'High', description: 'Add a CSP header to prevent XSS attacks.' });
+if (data.hasInsecureCookies) findings.push({ title: 'Insecure Cookies', severity: 'Medium', description: 'Cookies are not set with Secure or HttpOnly flags.' });
+if (data.hasOldHeaders) findings.push({ title: 'Outdated Security Headers', severity: 'Low', description: 'Headers like X-Frame-Options are missing or deprecated.' });
+if (!data.xssProtection) findings.push({ title: 'Missing X-XSS-Protection Header', severity: 'Medium', description: 'The X-XSS-Protection header is missing or improperly configured, leaving the site vulnerable to XSS attacks.' });
+if (data.sslVersion !== 'TLSv1.3') findings.push({ title: 'Outdated SSL/TLS Version', severity: 'High', description: `The site uses ${data.sslVersion}, which is an outdated or less secure SSL/TLS protocol. Upgrade to TLSv1.3.` });
+return findings;
+}
+
+function generatePerformanceFindings(data) {
+const findings = [];
+if (data.loadTime > 3) findings.push({ title: 'Slow Load Time', severity: 'High', description: `Page load time of ${data.loadTime}s is too slow.` });
+if (data.unoptimizedImages) findings.push({ title: 'Unoptimized Images', severity: 'Medium', description: 'Images are not compressed, affecting page speed.' });
+if (data.renderBlocking) findings.push({ title: 'Render-Blocking Resources', severity: 'High', description: 'Defer non-critical CSS/JS to improve initial render.' });
+if (!data.caching) findings.push({ title: 'No Caching Headers', severity: 'Medium', description: 'Static assets are not cached, forcing re-download on every visit.' });
+if (data.largeDom) findings.push({ title: 'Large DOM Size', severity: 'Low', description: 'Excessive DOM elements can slow down rendering.' });
+if (data.fcp > 2.5) findings.push({ title: 'High First Contentful Paint (FCP)', severity: 'Medium', description: `FCP of ${data.fcp}s indicates users see content slowly.` });
+if (data.lcp > 4.0) findings.push({ title: 'High Largest Contentful Paint (LCP)', severity: 'High', description: `LCP of ${data.lcp}s means main content takes too long to load.` });
+if (data.tbt > 0.2) findings.push({ title: 'High Total Blocking Time (TBT)', severity: 'Medium', description: `TBT of ${data.tbt}s indicates significant main-thread blocking.` });
+return findings;
+}
+
+function generateSeoFindings(data) {
+const findings = [];
+if (!data.hasMetaDescription) findings.push({ title: 'Missing Meta Description', severity: 'Low', description: 'Add a concise meta description to improve click-through rates.' });
+if (!data.hasAltText) findings.push({ title: 'Missing Alt Text on Images', severity: 'Low', description: 'Add alt attributes for image accessibility and SEO.' });
+if (!data.hasStructuredData) findings.push({ title: 'No Structured Data', severity: 'Medium', description: 'Add Schema.org markup to enhance search results.' });
+if (!data.isMobileFriendly) findings.push({ title: 'Not Mobile Friendly', severity: 'High', description: 'The page is not responsive for mobile devices.' });
+if (data.hasDuplicateTitles) findings.push({ title: 'Duplicate Page Titles', severity: 'High', description: 'Each page should have a unique title for better SEO.' });
+if (!data.sitemap) findings.push({ title: 'Missing XML Sitemap', severity: 'Medium', description: 'A sitemap helps search engines crawl your site more effectively.' });
+if (!data.robotsTxt) findings.push({ title: 'Missing or Invalid robots.txt', severity: 'Low', description: 'A robots.txt file guides search engine crawlers.' });
+if (data.brokenLinks) findings.push({ title: 'Broken Internal Links', severity: 'Medium', description: 'Broken links negatively impact user experience and SEO.' });
+return findings;
+}
+
+function updateDashboard(results) {
+document.getElementById('securityScore').textContent = results.securityScore;
+document.getElementById('performanceScore').textContent = results.performanceScore;
+document.getElementById('seoScore').textContent = results.seoScore;
+document.getElementById('overallScore').textContent = results.overallScore;
+
+document.getElementById('securityProgressBar').style.width = `${results.securityScore}%`;
+document.getElementById('performanceProgressBar').style.width = `${results.performanceScore}%`;
+document.getElementById('seoProgressBar').style.width = `${results.seoScore}%`;
+
+document.getElementById('securityIssueCount').textContent = results.findings.security.length;
+document.getElementById('performanceIssueCount').textContent = results.findings.performance.length;
+document.getElementById('seoIssueCount').textContent = results.findings.seo.length;
+
+renderFindings('securityFindings', results.findings.security, 'security');
+renderFindings('performanceFindings', results.findings.performance, 'performance');
+renderFindings('seoFindings', results.findings.seo, 'seo');
+
+updateGauge(overallGauge, results.overallScore);
+updateCharts(results.simulatedSiteData); // Pass the simulated data for charts
+}
+
+function renderFindings(containerId, findings, findingType) {
+const container = document.getElementById(containerId);
+container.innerHTML = '';
+if (findings.length === 0) {
+container.innerHTML = `<div class="flex items-center justify-center py-12 text-gray-500">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                       </svg> Excellent! No issues found.</div>`;
+return;
+}
+findings.forEach((finding, index) => {
+const findingEl = document.createElement('div');
+findingEl.className = 'finding-item p-3 mb-3 border rounded-md hover:bg-gray-50 transition-colors duration-200';
+findingEl.innerHTML = `
+                       <div class="flex justify-between items-start">
+                           <div class="flex items-start">
+                               <span class="mt-1 mr-3 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                   finding.severity === 'High' ? 'bg-red-100 text-red-800' : 
+                                   finding.severity === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'
+                               }">
+                                   ${finding.severity}
+                               </span>
+                               <div>
+                                   <h4 class="font-medium text-gray-800">${finding.title}</h4>
+                                   <p class="text-sm text-gray-600 mt-1">${finding.description}</p>
+                               </div>
+                           </div>
+                           <button class="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 fix-button" 
+                                   data-finding-index="${index}" data-finding-type="${findingType}">Fix</button>
+                       </div>
+                   `;
+container.appendChild(findingEl);
+});
+}
+
+// --- AI Suggestion Logic ---
+async function generateAISuggestions(finding) {
+    // This is a simulated AI response. In a real application, you would make an API call
+    // to a backend service that integrates with an actual AI model (e.g., OpenAI, Gemini).
+    // The prompt would be constructed based on the finding's title, description, and severity.
+
+    let suggestion = '';
+    switch (finding.title) {
+        case 'Missing HTTPS':
+            suggestion = `**Problem:** Your website is not using HTTPS, which means data transferred between your site and users is not encrypted. This is a major security risk and negatively impacts SEO.
+**AI Suggestion:**
+1.  **Obtain an SSL/TLS Certificate:** Acquire a certificate from a Certificate Authority (CA) like Let's Encrypt (free), DigiCert, or Comodo.
+2.  **Install and Configure:** Install the certificate on your web server (Apache, Nginx, IIS). Configure your server to redirect all HTTP traffic to HTTPS.
+3.  **Update Internal Links:** Ensure all internal links and resources (images, scripts, CSS) on your site use HTTPS.
+4.  **Update Google Search Console:** Inform Google about the change to HTTPS.`;
+            break;
+        case 'Missing Content Security Policy':
+            suggestion = `**Problem:** Your website lacks a Content Security Policy (CSP) header, making it vulnerable to Cross-Site Scripting (XSS) attacks and data injection.
+**AI Suggestion:**
+1.  **Define Your Policy:** Create a CSP header that specifies allowed sources for content (scripts, styles, images, etc.). Start with a strict policy and relax it as needed.
+    Example: \`Content-Security-Policy: default-src 'self'; script-src 'self' https://trusted.cdn.com; style-src 'self' 'unsafe-inline';\`
+2.  **Implement the Header:** Add the CSP header to your web server configuration (e.g., Apache's .htaccess, Nginx config) or through your application's code.
+3.  **Monitor and Refine:** Use CSP reporting tools to identify violations and refine your policy without blocking legitimate content.`;
+            break;
+        case 'Insecure Cookies':
+            suggestion = `**Problem:** Your website's cookies are not set with the 'Secure' or 'HttpOnly' flags, making them susceptible to interception (e.g., via MITM attacks) or client-side script access (XSS).
+**AI Suggestion:**
+1.  **Set 'Secure' Flag:** For all cookies transmitted over HTTPS, ensure the 'Secure' flag is set. This prevents the cookie from being sent over unencrypted HTTP connections.
+    *   In PHP: \`setcookie('name', 'value', ['samesite' => 'Lax', 'secure' => true, 'httponly' => true]);\`
+    *   In Node.js (Express): \`res.cookie('name', 'value', { secure: true, httpOnly: true, sameSite: 'Lax' });\`
+2.  **Set 'HttpOnly' Flag:** For cookies that should not be accessible by client-side scripts (e.g., session IDs), set the 'HttpOnly' flag. This mitigates XSS risks.
+3.  **Consider 'SameSite' Attribute:** Implement the 'SameSite' attribute ('Lax', 'Strict', or 'None') to prevent Cross-Site Request Forgery (CSRF) attacks.`;
+            break;
+        case 'Slow Load Time':
+            suggestion = `**Problem:** Your page load time of ${finding.description.match(/(\d+\.?\d*)s/)[1]}s is too slow, leading to poor user experience and lower search engine rankings.
+**AI Suggestion:**
+1.  **Optimize Images:** Compress images, use modern formats (WebP), and implement lazy loading.
+2.  **Minify CSS and JavaScript:** Remove unnecessary characters from code without changing functionality.
+3.  **Leverage Browser Caching:** Set up proper caching headers for static assets.
+4.  **Reduce Server Response Time:** Optimize database queries, use a faster server, or implement a CDN.
+5.  **Eliminate Render-Blocking Resources:** Defer non-critical CSS and JavaScript.`;
+            break;
+        case 'Unoptimized Images':
+            suggestion = `**Problem:** Images on your site are not optimized, contributing significantly to slow page load times.
+**AI Suggestion:**
+1.  **Compress Images:** Use tools like TinyPNG, ImageOptim, or online compressors to reduce file size without significant quality loss.
+2.  **Choose Right Format:** Use JPEG for photographs, PNG for graphics with transparency, and WebP for modern browsers (offers better compression).
+3.  **Implement Lazy Loading:** Load images only when they are about to enter the viewport.
+4.  **Serve Responsive Images:** Use \`<picture>\` element or \`srcset\` attribute to serve different image sizes based on the user's device.`;
+            break;
+        case 'Missing Meta Description':
+            suggestion = `**Problem:** Your page is missing a meta description, which is crucial for attracting clicks from search engine results pages (SERPs).
+**AI Suggestion:**
+1.  **Write Unique Descriptions:** Craft a unique, compelling meta description (around 150-160 characters) for each page.
+2.  **Include Keywords:** Naturally integrate relevant keywords to signal content relevance to search engines and users.
+3.  **Call to Action:** Encourage users to click by including a clear call to action (e.g., "Learn More," "Shop Now").
+4.  **Implement in HTML:** Add the meta description within the \`<head>\` section of your HTML:
+    \`\`\`html
+    <meta name="description" content="Your concise and compelling description here.">
+    \`\`\`
+    If using a CMS, use its SEO plugin.`;
+            break;
+        case 'Not Mobile Friendly':
+            suggestion = `**Problem:** Your website is not responsive or mobile-friendly, leading to a poor experience for users on smartphones and tablets, and negatively impacting mobile SEO.
+**AI Suggestion:**
+1.  **Implement Responsive Design:** Use CSS media queries to adapt your layout, images, and text sizes to different screen sizes.
+2.  **Use a Mobile-First Approach:** Design and develop for mobile devices first, then scale up for larger screens.
+3.  **Ensure Readable Fonts:** Use font sizes that are easily readable on small screens (e.g., 16px for body text).
+4.  **Optimize Tap Targets:** Ensure buttons and links are large enough and spaced adequately for easy tapping.
+5.  **Avoid Flash and Pop-ups:** These can hinder mobile usability.
+6.  **Test with Google's Mobile-Friendly Test:** Use Google's tool to identify specific issues.`;
+            break;
+        case 'Broken Internal Links':
+            suggestion = `**Problem:** Your website has broken internal links, which can frustrate users, prevent search engine crawlers from indexing pages, and negatively impact SEO.
+**AI Suggestion:**
+1.  **Identify Broken Links:** Use a website crawler (e.g., Screaming Frog, Ahrefs, Google Search Console) to find all broken internal links (404 errors).
+2.  **Correct or Remove:**
+    *   **Correct:** Update the URL in your content to the correct, existing page.
+    *   **Remove:** If the linked page no longer exists and has no suitable replacement, remove the link.
+3.  **Implement 301 Redirects:** If a page has moved permanently, set up a 301 (permanent) redirect from the old URL to the new one.
+4.  **Regular Monitoring:** Periodically check for broken links to maintain site health.`;
+            break;
+        default:
+            suggestion = `**AI Suggestion for "${finding.title}" (${finding.severity}):**
+This is a general suggestion. For "${finding.title}", you should investigate the root cause described: "${finding.description}".
+Consider consulting official documentation or a web development expert for a tailored solution.
+Common steps often involve:
+*   Reviewing server configurations.
+*   Updating content management system (CMS) settings or plugins.
+*   Optimizing code (HTML, CSS, JavaScript).
+*   Ensuring all external resources are properly loaded and secure.`;
+            break;
+    }
+    return suggestion;
+}
+
+function showFixSuggestion(finding) {
+    aiSuggestionTitle.textContent = `AI Fix Suggestion for: ${finding.title}`;
+    aiSuggestionContent.innerHTML = `<p class="font-semibold text-gray-800 mb-2">Issue: ${finding.description}</p>` + generateAISuggestions(finding);
+    aiSuggestionModal.classList.remove('hidden');
+}
+
+closeAiSuggestionModal.addEventListener('click', () => {
+    aiSuggestionModal.classList.add('hidden');
+});
+
+copySuggestionBtn.addEventListener('click', () => {
+    const textToCopy = aiSuggestionContent.innerText;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        alert('Suggestion copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+    });
+});
+
+
+// --- Settings Logic ---
+settingsBtn.addEventListener('click', () => {
+themeSelect.value = currentSettings.theme;
+apiKeyInput.value = currentSettings.apiKey;
+document.getElementById('autoUpdate').checked = currentSettings.autoUpdate;
+settingsModal.classList.remove('hidden');
+});
+
+closeSettingsBtn.addEventListener('click', () => { settingsModal.classList.add('hidden'); });
+cancelSettingsBtn.addEventListener('click', () => { settingsModal.classList.add('hidden'); });
+saveSettingsBtn.addEventListener('click', () => {
+currentSettings.theme = themeSelect.value;
+currentSettings.apiKey = apiKeyInput.value;
+currentSettings.autoUpdate = document.getElementById('autoUpdate').checked;
+saveSettings();
+applyTheme(currentSettings.theme);
+settingsModal.classList.add('hidden');
+});
+
+function loadSettings() {
+const saved = JSON.parse(localStorage.getItem('auditorSettings'));
+if (saved) currentSettings = saved;
+applyTheme(currentSettings.theme);
+}
+
+function saveSettings() { localStorage.setItem('auditorSettings', JSON.stringify(currentSettings)); }
+
+function applyTheme(theme) {
+document.body.classList.remove('light', 'dark');
+document.body.classList.add(theme);
+}
+
+// --- History Logic ---
+historyBtn.addEventListener('click', () => {
+resultsDashboard.classList.add('hidden');
+progressSection.classList.add('hidden');
+historyPanel.classList.toggle('hidden');
+renderAuditHistory();
+});
+
+clearHistoryBtn.addEventListener('click', () => {
+if (confirm('Are you sure you want to clear all history?')) {
+auditHistory = [];
+localStorage.removeItem('auditHistory');
+renderAuditHistory();
+}
+});
+
+function addAuditToHistory(results) {
+auditHistory.unshift(results);
+if (auditHistory.length > 10) auditHistory.pop();
+localStorage.setItem('auditHistory', JSON.stringify(auditHistory));
+}
+
+function renderAuditHistory() {
+historyList.innerHTML = '';
+if (auditHistory.length === 0) {
+historyList.innerHTML = '<p class="text-gray-500 text-center py-4">No audit history found.</p>';
+return;
+}
+auditHistory.forEach(audit => {
+const date = new Date(audit.timestamp).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+const historyItem = document.createElement('div');
+historyItem.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg transition-colors duration-200 cursor-pointer hover:bg-gray-100';
+historyItem.innerHTML = `
+                       <div class="flex items-center">
+                           <div class="w-3 h-3 rounded-full ${audit.overallScore >= 90 ? 'bg-green-500' : audit.overallScore >= 70 ? 'bg-yellow-500' : 'bg-red-500'} mr-3"></div>
+                           <div>
+                               <p class="text-sm font-medium truncate">${audit.url}</p>
+                               <p class="text-xs text-gray-500">${audit.auditType} Audit • ${date}</p>
+                           </div>
+                       </div>
+                       <button class="text-sm text-blue-600 hover:text-blue-800">View</button>
+                   `;
+historyItem.addEventListener('click', () => {
+updateDashboard(audit);
+historyPanel.classList.add('hidden');
+resultsDashboard.classList.remove('hidden');
+});
+historyList.appendChild(historyItem);
+});
+}
+
+// --- Saved Websites Logic ---
+addWebsiteBtn.addEventListener('click', () => {
+const url = prompt("Enter the website URL to save:");
+if (url) {
+const exists = savedWebsites.some(site => site.url === url);
+if (!exists) {
+savedWebsites.unshift({ url: url, lastAudited: new Date() });
+localStorage.setItem('savedWebsites', JSON.stringify(savedWebsites));
+renderSavedWebsites();
+} else {
+alert("This website is already saved.");
+}
+}
+});
+
+function renderSavedWebsites() {
+savedWebsitesList.innerHTML = '';
+if (savedWebsites.length === 0) {
+savedWebsitesList.innerHTML = '<p class="text-gray-500 text-sm text-center py-2">No saved websites.</p>';
+return;
+}
+savedWebsites.forEach(site => {
+const savedItem = document.createElement('div');
+savedItem.className = 'flex items-center justify-between p-2 hover:bg-gray-50 rounded cursor-pointer transition-colors duration-200';
+const lastAudited = new Date(site.lastAudited);
+const now = new Date();
+const diffDays = Math.floor((now - lastAudited) / (1000 * 60 * 60 * 24));
+const timeAgo = diffDays === 0 ? 'Today' : diffDays === 1 ? '1 day ago' : `${diffDays} days ago`;
+savedItem.innerHTML = `
+                       <div class="flex items-center">
+                           <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                           <span class="text-sm truncate">${site.url}</span>
+                       </div>
+                       <span class="text-xs text-gray-500">${timeAgo}</span>
+                   `;
+savedItem.addEventListener('click', () => {
+websiteUrlInput.value = site.url;
+startAudit();
+});
+savedWebsitesList.appendChild(savedItem);
+});
+}
+
+// --- PDF Export Logic ---
+// Generate PDF report using html2canvas and jsPDF (image snapshot of dashboard)
+exportPdfBtn.addEventListener('click', function() {
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'fixed inset-0 flex items-center justify-center bg-white bg-opacity-90 z-50';
+    loadingIndicator.innerHTML = `
+        <div class="text-center p-6 rounded-lg">
+            <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p class="mt-4 text-gray-700">Generating PDF report...</p>
+        </div>
+    `;
+    document.body.appendChild(loadingIndicator);
+
+    setTimeout(() => {
+        html2canvas(document.querySelector('#resultsDashboard')).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const imgWidth = pageWidth;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            pdf.save('website-audit-report.pdf');
+            document.body.removeChild(loadingIndicator);
+        });
+    }, 1000);
+});
+
+// --- Chart Data Update Logic ---
+function updateCharts(simulatedSiteData) {
+const site = simulatedSiteData; // Use the dynamically generated data
+
+performanceChart.data.datasets[0].data = [
+site.performance.fcp,
+site.performance.loadTime + randomInRange(0.5, 0.2), // Simulated speed index
+site.performance.lcp,
+site.performance.tti,
+site.performance.tbt,
+site.performance.cls
+];
+performanceChart.update();
+
+securityChart.data.datasets[0].data = [
+site.security.isHttps ? 100 : 50,
+site.security.hasOldHeaders ? 60 : 100,
+site.security.hasInsecureCookies ? 50 : 100,
+site.security.hasCsp ? 100 : 50,
+site.security.xssProtection ? 100 : 50,
+site.security.sslVersion === 'TLSv1.3' ? 100 : 60
+];
+securityChart.update();
+
+seoChart.data.datasets[0].data = [
+site.seo.hasMetaDescription ? 100 : 60,
+100, // Headings are generally fine in these examples
+site.seo.hasAltText ? 100 : 70,
+site.seo.hasStructuredData ? 100 : 50,
+site.seo.sitemap ? 100 : 50,
+site.seo.isMobileFriendly ? 100 : 40
+];
+seoChart.update();
+}
+
+function updateGauge(gauge, score) {
+gauge.data.datasets[0].data = [score, 100 - score];
+gauge.update();
+const gradeText = document.getElementById('overallGrade');
+if (score >= 90) { gradeText.textContent = 'Excellent'; gradeText.className = 'text-sm font-medium text-green-600'; }
+else if (score >= 70) { gradeText.textContent = 'Good'; gradeText.className = 'text-sm font-medium text-blue-600'; }
+else if (score >= 50) { gradeText.textContent = 'Fair'; gradeText.className = 'text-sm font-medium text-yellow-600'; }
+else { gradeText.textContent = 'Poor'; gradeText.className = 'text-sm font-medium text-red-600'; }
+}
+
+function randomInRange(base, variation) {
+const min = Math.max(0, base - variation);
+const max = Math.min(100, base + variation);
+return Math.random() * (max - min) + min;
+}
+
+// Suggestion Panel Feature
+openSuggestionPanel.addEventListener('click', () => {
+suggestionPanel.classList.remove('hidden');
+openSuggestionPanel.classList.add('hidden');
+});
+
+closeSuggestionPanel.addEventListener('click', () => {
+suggestionPanel.classList.add('hidden');
+openSuggestionPanel.classList.remove('hidden');
+suggestionMsg.classList.add('hidden');
+});
+
+suggestionForm.addEventListener('submit', function(e) {
+e.preventDefault();
+suggestionMsg.textContent = "Thank you! Our team will review your site and send improvement suggestions to your email.";
+suggestionMsg.classList.remove('hidden');
+suggestionForm.reset();
+setTimeout(() => {
+suggestionPanel.classList.add('hidden');
+openSuggestionPanel.classList.remove('hidden');
+}, 3000);
+});
+
+// Start everything
+init();
+});
+</script>
+</body>
+</html>
