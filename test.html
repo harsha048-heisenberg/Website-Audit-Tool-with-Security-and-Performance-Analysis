@@ -44,7 +44,10 @@
     <div class="max-w-7xl mx-auto px-4 py-8">
         <header class="mb-8 border-b pb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <div class="flex items-center mb-4 sm:mb-0">
-                <img src="https://placehold.co/40x40" alt="Enterprise shield logo with checkmark badge" class="w-10 h-10 mr-3">
+                <!-- Only the first logo -->
+                <div class="flex space-x-2 mr-3">
+                    <img src="https://img.favpng.com/22/12/19/web-page-world-wide-web-website-internet-logo-png-favpng-56JhDBu1frEDMakzkv63TuQKM.jpg" alt="Logo 1" class="w-10 h-10 rounded">
+                </div>
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-bold text-white">Enterprise Website Auditor</h1>
                     <p class="text-sm text-white">Comprehensive security, performance and compliance analysis</p>
@@ -818,7 +821,7 @@
                 const site = SITE_DATA[url] || SITE_DATA['https://example.com'];
                 performanceChart.data.datasets[0].data = [
                     site.performance.loadTime,
-                    site.performance.loadTime + randomInRange(0.5, 0.2), // Simulated speed index
+                    site.performance.loadTime + randomInRange(0.5, 0.2) // Simulated speed index
                     site.performance.loadTime * 0.9, // Simulated LCP
                     site.performance.loadTime + randomInRange(1, 0.5), // Simulated TTI
                     site.performance.renderBlocking ? randomInRange(0.5, 0.2) : randomInRange(0.1, 0.05), // TBT
